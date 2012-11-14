@@ -50,7 +50,7 @@ public:
 double scalar(vect a, vect b) {
 	return
 	a.x * b.x +
-			//a.y * b.y +
+			a.y * b.y +
 			a.z * b.z;
 }
 
@@ -63,7 +63,7 @@ double scalar(vect a, vect b) {
 double space(vect a, vect b) {
 	return sqrt(
 			(a.x - b.x)*(a.x - b.x) +
-			//(a.y - b.y)*(a.y - b.y) +
+			(a.y - b.y)*(a.y - b.y) +
 			(a.z - b.z)*(a.z - b.z)
 			);
 }
@@ -75,7 +75,7 @@ double space(vect a, vect b) {
 double length(vect a) {
 	return sqrt(
 			a.x * a.x +
-			//a.y * a.y +
+			a.y * a.y +
 			a.z * a.z
 			);
 }
@@ -106,9 +106,9 @@ int main() {
 				temp->pos.z = k;
 
 				//абсолютные координаты частицы
-				temp->absPos.x =  i * dstep;
-				temp->absPos.y =  j * dstep;
-				temp->absPos.z =  k * dstep;
+				temp->absPos.x = i * dstep;
+				temp->absPos.y = j * dstep;
+				temp->absPos.z = k * dstep;
 
 				//магн. моменты
 				temp->m.x = kv * vol * temp->axis.x * I0s;
@@ -121,8 +121,7 @@ int main() {
 	f << "X\tY\tZ\tMx\tMy\tMz\tHx\tHy\tHz\t|H|" << endl;
 	//выполнение рассчетов
 	for (int i = 0; i < N; i++) {
-		int j=0;
-		//for (int j = 0; j < N; j++) {
+		for (int j = 0; j < N; j++) {
 			for (int k = 0; k < N; k++) {
 				temp = &parts[i][j][k];
 				temp->calcInteraction(&parts);
@@ -150,12 +149,12 @@ int main() {
 						<< temp->interaction.z << "\t"
 						<< temp->intMod << endl;
 			}
-		//}
+		}
 	}
 
 	//так как каждый элемент решетки имеет электрон - то доступ к каждому электрону с координатами {x,y,z}
 	//будет происходить по parts[x][y][z]
-	cout<<"total: "<<total;
+	cout << "total: " << total;
 	system("pause");
 }
 
@@ -173,8 +172,7 @@ void Part::calcInteraction(vector < vector < vector < Part > > >* parts2) {
 	vector < vector < vector < Part > > > parts = *parts2;
 	Part* temp; //временныый элемент частицы, для ускорения кода
 	for (int i = 0; i < N; i++) {
-		int j=0;
-		//for (int j = 0; j < N; j++) {
+		for (int j = 0; j < N; j++) {
 			for (int k = 0; k < N; k++) {
 				if (i != this->pos.x || j != this->pos.y || k != this->pos.z) { //не считать взаимодействие частицы на себя
 					temp = &parts[i][j][k];
@@ -189,7 +187,7 @@ void Part::calcInteraction(vector < vector < vector < Part > > >* parts2) {
 					this->interaction.y += (part * y) / r5 - temp->m.y / r3;
 					this->interaction.z += (part * z) / r5 - temp->m.z / r3;
 				}
-			//}
+			}
 		}
 	}
 }
