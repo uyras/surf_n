@@ -1,17 +1,18 @@
 #include<iostream>
+#include<fstream>
 #include <stdlib.h>
 #include <vector>
 #include <math.h>
 
 using namespace std;
 
-int N = 6, total = N * N*N; //count of particles
+int N = 6, total = N * N * N; //count of particles
 double
 I0s = 500, //намагниченность насыщения в гаусс,
 		hc = 50, //критическое поле в эрстедах,
 		vol = 0.5, //объем в микронах кубических,
-		dstep = 1E-4, //параметр решетки в микронах
-		kv = 1E-12, //перевод к сантиметрам кубическим и к сантиметрам,
+		dstep = 0.0001, //параметр решетки в микронах (множитель)
+		kv = 1E-12, //перевод к сантиметрам кубическим и к сантиметрам (множитель для перевода),
 		md; //модуль магнитного момента
 //векторы
 
@@ -23,8 +24,10 @@ struct vect {
 
 class Part {
 public:
-	int x, y, z; //координаты, для удобства в относительных величинах
-	double absX, absY, absZ; //абсолютные координаты
+	vect pos; //координаты, для удобства в относительных величинах
+	//int x, y, z;
+	vect absPos; //абсолютные координаты
+	//double absX, absY, absZ;
 	vect axis; //ось частицы
 	vect m; //магнитный момент
 	vect interaction; //поле взаимодействия
@@ -33,8 +36,8 @@ public:
 	Part();
 	/**
 	 * Считает взаимодействия между этой частицей и остальным массивом частиц
-     * @param
-     */
+	 * @param
+	 */
 	void calcInteraction(vector < vector < vector < Part > > >*);
 };
 
@@ -45,7 +48,10 @@ public:
  * @return
  */
 double scalar(vect a, vect b) {
-	return a.x * b.x + a.y * b.y + a.z * b.z;
+	return
+	a.x * b.x +
+			//a.y * b.y +
+			a.z * b.z;
 }
 
 /**
@@ -57,7 +63,7 @@ double scalar(vect a, vect b) {
 double space(vect a, vect b) {
 	return sqrt(
 			(a.x - b.x)*(a.x - b.x) +
-			(a.y - b.y)*(a.y - b.y) +
+			//(a.y - b.y)*(a.y - b.y) +
 			(a.z - b.z)*(a.z - b.z)
 			);
 }
@@ -66,16 +72,18 @@ double space(vect a, vect b) {
  * длина вектора
  * @return
  */
-double length(vect a){
+double length(vect a) {
 	return sqrt(
 			a.x * a.x +
-			a.y * a.y +
+			//a.y * a.y +
 			a.z * a.z
 			);
 }
 
 int main() {
 	Part* temp; //временныый элемент частицы, для ускорения кода
+
+	ofstream f("d:\\file.txt");
 
 	//инициализируем 3-х мерный массив parts
 	vector < vector < vector < Part > > > parts;
@@ -93,14 +101,14 @@ int main() {
 			for (int k = 0; k < N; k++) {
 				temp = &parts[i][j][k];
 				//координаты частицы (для удобства)
-				temp->x = i;
-				temp->y = j;
-				temp->z = k;
+				temp->pos.x = i;
+				temp->pos.y = j;
+				temp->pos.z = k;
 
 				//абсолютные координаты частицы
-				temp->absX = temp->x * dstep;
-				temp->absY = temp->y * dstep;
-				temp->absZ = temp->x * dstep;
+				temp->absPos.x =  i * dstep;
+				temp->absPos.y =  j * dstep;
+				temp->absPos.z =  k * dstep;
 
 				//магн. моменты
 				temp->m.x = kv * vol * temp->axis.x * I0s;
@@ -109,40 +117,45 @@ int main() {
 			}
 		}
 	}
-
+	cout << "X\tY\tZ\tMx\tMy\tMz\tHx\tHy\tHz\t|H|" << endl;
+	f << "X\tY\tZ\tMx\tMy\tMz\tHx\tHy\tHz\t|H|" << endl;
 	//выполнение рассчетов
 	for (int i = 0; i < N; i++) {
-		for (int j = 0; j < N; j++) {
+		int j=0;
+		//for (int j = 0; j < N; j++) {
 			for (int k = 0; k < N; k++) {
 				temp = &parts[i][j][k];
 				temp->calcInteraction(&parts);
 				temp->intMod = length(temp->interaction);
+				cout
+						<< temp->absPos.x << "\t"
+						<< temp->absPos.y << "\t"
+						<< temp->absPos.z << "\t"
+						<< temp->m.x << "\t"
+						<< temp->m.y << "\t"
+						<< temp->m.z << "\t"
+						<< temp->interaction.x << "\t"
+						<< temp->interaction.y << "\t"
+						<< temp->interaction.z << "\t"
+						<< temp->intMod << endl;
+				f
+						<< temp->absPos.x << "\t"
+						<< temp->absPos.y << "\t"
+						<< temp->absPos.z << "\t"
+						<< temp->m.x << "\t"
+						<< temp->m.y << "\t"
+						<< temp->m.z << "\t"
+						<< temp->interaction.x << "\t"
+						<< temp->interaction.y << "\t"
+						<< temp->interaction.z << "\t"
+						<< temp->intMod << endl;
 			}
-		}
+		//}
 	}
 
 	//так как каждый элемент решетки имеет электрон - то доступ к каждому электрону с координатами {x,y,z}
 	//будет происходить по parts[x][y][z]
-	cout << parts[0][0][0].axis.x << " " << parts[0][0][0].axis.z;
-	/* ???
-		for (int i = 0; i < f; i++)
-			for (int j = 1; j <= f; j++) {
-				x0[j + i * f] = (j - 1) * dstep;
-				y0[j + i * f] = 0 * dstep;
-				z0[j + i * f] = (j - 1) * dstep;
-			}
-	 *
-
-
-	for (int i = 1; i <= f * f; i++) {
-		cout << "x0[" << i << "]=" << x0[i] << " y0[" << i << "]=" << y0[i] << " z0[" << i << "]=" << z0[i] << endl;
-		cout << "mx[" << i << "]=" << mX[i] << " my[" << i << "]=" << mY[i] << " mz[" << i << "]=" << mZ[i] << endl << endl;
-	}
-
-	md = kv * vol*I0s;
-	cout << " |m|=" << md << " |M|=" << f * f * md << endl;
-	 */
-
+	cout<<"total: "<<total;
 	system("pause");
 }
 
@@ -156,16 +169,27 @@ Part::Part() {
 	this->interaction.x = this->interaction.y = this->interaction.z = this->intMod = 0;
 }
 
-void Part::calcInteraction(vector < vector < vector < Part > > >* parts) {
+void Part::calcInteraction(vector < vector < vector < Part > > >* parts2) {
+	vector < vector < vector < Part > > > parts = *parts2;
+	Part* temp; //временныый элемент частицы, для ускорения кода
 	for (int i = 0; i < N; i++) {
-		for (int j = 0; j < N; j++) {
+		int j=0;
+		//for (int j = 0; j < N; j++) {
 			for (int k = 0; k < N; k++) {
-				if (i != this->x && j != this->y && k != this->z) { //не считать взаимодействие частицы на себя
-					this->interaction.x += 1;
-					this->interaction.y += 1;
-					this->interaction.z += 1;
+				if (i != this->pos.x || j != this->pos.y || k != this->pos.z) { //не считать взаимодействие частицы на себя
+					temp = &parts[i][j][k];
+					double r = space(this->absPos, temp->absPos);
+					double r3 = pow(r, 3);
+					double r5 = pow(r, 5);
+					double x = this->absPos.x - temp->absPos.x;
+					double y = this->absPos.y - temp->absPos.y;
+					double z = this->absPos.z - temp->absPos.z;
+					double part = 3 * (temp->m.x * x + temp->m.y * y + temp->m.z * z);
+					this->interaction.x += (part * x) / r5 - temp->m.x / r3;
+					this->interaction.y += (part * y) / r5 - temp->m.y / r3;
+					this->interaction.z += (part * z) / r5 - temp->m.z / r3;
 				}
-			}
+			//}
 		}
 	}
 }
