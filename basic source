@@ -97,10 +97,10 @@ call ide4 (hmax, hk)
      IrNsY=0
 ' Остаточная после создания обр. и насыщения
      for i = 1 to m
-IrNs = IrNs +mz(i)/kv
-IrNsY = IrNsY +my(i)/kv
-Irs = Irs + abs(mz(i))/kv
-IrsY = IrsY + abs(my(i))/kv
+IrNs = IrNs +mz(i)/kv 'проекция на ось Z
+IrNsY = IrNsY +my(i)/kv 'проекция магн. момента всей системы на ось Y
+Irs = Irs + abs(mz(i))/kv '
+IrsY = IrsY + abs(my(i))/kv '
      next i
      Irs=int(Irs/10)
      IrsY=int(IrsY/10)
@@ -546,6 +546,7 @@ dim it as integer
      hr = hr + hrz
 intr10:    next it
 end sub
+
      sub inter2
 ' Подсчитаем поле взаимод. для всех частиц
 shared hrm(), hrrx(), hrry(), hrrz(), x0(), y0(), z0(), mx(), my(),
