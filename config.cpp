@@ -1,4 +1,4 @@
-const int N = 6, M=6, total = N * M;
+const int N = 10, M = 10, total = N * M;
 const double
 I0s = 500, //намагниченность насыщения в гаусс,
 		hc = 50, //критическое поле в эрстедах,

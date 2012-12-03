@@ -39,7 +39,7 @@ double vect::space(vect b) {
 }
 
 vect vect::radius(vect b) {
-	return vect(this->x - b.x, this->y - b.y, this->z - b.z);
+	return vect(b.x - this->x, b.y - this->y, b.z - this->z);
 }
 
 double vect::length() {
@@ -65,6 +65,6 @@ void vect::rotate() {
 
 vect& vect::operator=(const vect& a){
 	this->x = a.x;
-	this->x = a.y;
-	this->x = a.x;
+	this->y = a.y;
+	this->z = a.z;
 }

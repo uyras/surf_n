@@ -63,95 +63,59 @@ void printDiff(double min, double max, int steps, vector<double>* elems, char* f
 	f << "more " << step.back() << "\t" << (float) raspr[step.size()] / total << endl;
 }
 
-int main() {
-	Part* temp; //временныый элемент частицы, для ускорения кода
-
-	//инициализируем 3-х мерный массив parts
-	PartArray parts(N, 1, M);
-	parts.setAntiferr();
-
-	float minH = 0, maxH = 0, averH = 0; //минимальное максимальное и среднее значения модуля поля взаимодействия
-	float minHx = 0, maxHx = 0, averHx = 0; //тут понятно по подобию
-	float minHz = 0, maxHz = 0, averHz = 0;
-	double mTotal = 0;
-	vector<double> intMod, intX, intZ;
-	bool first = true;
-	int tick = 0;
-	//выполнение рассчетов
-	parts.calcInteraction();
-	//	for (int i = 0; i < N; i++) {
-	//		int j = 0;
-	//		//for (int j = 0; j < N; j++) {
-	//		for (int k = 0; k < M; k++) {
-	//			parts.calcInteraction(i, j, k);
-	//			temp = parts.getElem(i, j, k);
-	//
-	//			intMod.push_back(temp->intMod);
-	//			intX.push_back(temp->interaction.x);
-	//			intZ.push_back(temp->interaction.z);
-	//
-	//			mTotal += temp->m.length();
-	//
-	//			if (first) {
-	//				minH = maxH = averH = temp->intMod;
-	//				minHx = maxHx = averHx = temp->interaction.x;
-	//				minHz = maxHz = averHz = temp->interaction.z;
-	//				first = false;
-	//			} else {
-	//				if (minH > temp->intMod) minH = temp->intMod;
-	//				if (maxH < temp->intMod) maxH = temp->intMod;
-	//				averH = (averH * tick + temp->intMod) / (tick + 1);
-	//
-	//				if (minHx > temp->interaction.x) minHx = temp->interaction.x;
-	//				if (maxHx < temp->interaction.x) maxHx = temp->interaction.x;
-	//				averHx = (averHx * tick + temp->interaction.x) / (tick + 1);
-	//
-	//				if (minHz > temp->interaction.z) minHz = temp->interaction.z;
-	//				if (maxHz < temp->interaction.z) maxHz = temp->interaction.z;
-	//				averHz = (averHz * tick + temp->interaction.z) / (tick + 1);
-	//			}
-	//			tick++;
-	//		}
-	//		//}
-	//	}
-	parts.calcEnergy1();
-	parts.calcEnergy2();
-	parts.cout();
-	parts.draw();
-	bool rotated = true;
-	while (rotated) {
-		rotated = false;
-		for (int k = 0; k < M; k++) {
-			int j = 0;
-			//for (int j = 0; j < N; j++) {
-			for (int i = 0; i < N; i++) {
-				temp = parts.getElem(i, j, k);
-				if (temp->intMod > hc && temp->interaction.scalar(temp->m) < 0) {
-					cout << "rotate with x=" << i << "; z=" << k << endl;
-					temp->m.rotate();
-					temp->axis.rotate();
-					parts.calcInteraction();
-					rotated = true;
-
-				} else {
-					cout << "normal with x=" << i << "; z=" << k << endl;
-				}
-				if (rotated) break;
-			}
-			if (rotated) break;
-		}
+void writefile(vector<double> &history, const char*file) {
+	vector<double>::iterator iter;
+	fstream f;
+	f.open(file, fstream::trunc | fstream::out);
+	iter = history.begin();
+	while (iter != history.end()) {
+		f << (*iter)*1e06 << endl;
+		iter++;
 	}
+	f.close();
+}
+
+int main() {
+	vector<double> history;
+	fstream f;
+
+	PartArray parts(N, 1, M); //инициализируем 3-х мерный массив parts
+	parts.setAllUp(); //устанавливаем магнитные моменты
+	parts.draw();
+	parts.cout();
+	parts.processStep();
 	parts.calcEnergy1();
-	parts.calcEnergy2();
 	parts.cout();
 	parts.draw();
+//	parts.cout();
+//	parts.draw();
+//	history = parts.processStep(); //переворачиваем частицы
+//	vect a;
+//	a = parts.calcInteractionNeighb(parts.getElem(4,4,4));
+//	cout<<a.length()<<endl;
+//	parts.cout();
+//	parts.draw();
+	//writefile(history,"d:\\a1.txt");
 
-	//printDiff(minH, maxH, 50, &intMod, "d:\\H.txt");
-	//printDiff(minHx, maxHx, 50, &intX, "d:\\Hx.txt");
-	//printDiff(minHz, maxHz, 50, &intZ, "d:\\Hz.txt");
-
-	cout << "MTotal:\t" << mTotal << endl;
-	cout << "total:\t" << total;
+//	parts.setAntiferr(); //устанавливаем магнитные моменты
+//	parts.draw();
+//	history = parts.processRandom(); //переворачиваем частицы
+//	//	writefile(history,"d:\\a2.txt");
+//	//
+//	parts.setAntiferr(); //устанавливаем магнитные моменты
+//	parts.draw();
+//	history = parts.processMaxH(); //переворачиваем частицы
+//	//	writefile(history,"d:\\a3.txt");
+//	//
+//	parts.setAntiferr(); //устанавливаем магнитные моменты
+//	parts.draw();
+//	history = parts.processGroupMaxH(); //переворачиваем частицы
+//	//	writefile(history,"d:\\a4.txt");
+//	//
+//	parts.setAntiferr(); //устанавливаем магнитные моменты
+//	parts.draw();
+//	history = parts.processGroupStep(); //переворачиваем частицы
+	//	writefile(history,"d:\\a5.txt");
 }
 
 
