@@ -10,7 +10,6 @@
 #include <vector>
 #include "vect.h"
 
-
 class Part {
 public:
 	vect pos; //координаты, для удобства в относительных величинах
@@ -19,6 +18,7 @@ public:
 	vect m; //магнитный момент
 	vect interaction; //поле взаимодействия
 	double intMod; //модуль (длина) поля взаимодействия
+	double e; //энергия частицы
 
 	Part();
 };

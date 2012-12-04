@@ -62,7 +62,7 @@ Part* PartArray::getElem(int x, int y, int z) {
 
 void PartArray::calcInteraction(Part* elem) {
 	std::vector < Part >::iterator iterator1;
-	vect rvect(0,0,0);
+	vect rvect(0, 0, 0);
 	elem->interaction.x = 0;
 	elem->interaction.y = 0;
 	elem->interaction.z = 0;
@@ -79,9 +79,10 @@ void PartArray::calcInteraction(Part* elem) {
 			dy = elem->absPos.y - (*iterator1).absPos.y;
 			dz = elem->absPos.z - (*iterator1).absPos.z;
 			part = (*iterator1).m.x * dx + (*iterator1).m.y * dy + (*iterator1).m.z * dz;
-			elem->interaction.x += ((*iterator1).m.x * r2 - (3 * part * dx)) / r5;
-			elem->interaction.y += ((*iterator1).m.y * r2 - (3 * part * dy)) / r5;
-			elem->interaction.z += ((*iterator1).m.z * r2 - (3 * part * dz)) / r5;
+			//степени отличаются от формулы потому что обе дроби внесены под общий знаменатель
+			elem->interaction.x += ((3 * part * dx) - (*iterator1).m.x * r2) / r5;
+			elem->interaction.y += ((3 * part * dy) - (*iterator1).m.y * r2) / r5;
+			elem->interaction.z += ((3 * part * dz) - (*iterator1).m.z * r2) / r5;
 			//elem->interaction.z += (3 * part * dz) / r5 - (*l3Iterator).m.z * r2 / r3;
 		}
 		++iterator1;
@@ -156,10 +157,11 @@ double PartArray::calcEnergy1(Part* elem) {
 			r = rij.length();
 			r2 = r * r; //радиус в кубе
 			r5 = r2 * r * r * r; //радиус в пятой
-			E +=
+			E += //энергии отличаются от формулы потому что дроби внесены под общий знаменатель
 					(((*iterator1).m.scalar(elem->m) * r2)
 					-
-					(3 * elem->m.scalar(rij) * (*iterator1).m.scalar(rij))) / r5;
+					(3 * elem->m.scalar(rij) * (*iterator1).m.scalar(rij))) / r5; //энергия считается векторным методом, так как она не нужна для каждой оси
+
 		}
 		++iterator1;
 	}
@@ -171,7 +173,8 @@ void PartArray::calcEnergy2() {
 	this->E2 = 0;
 	iterator2 = this->parts.begin();
 	while (iterator2 != this->parts.end()) {
-		this->E2 -= (*iterator2).interaction.scalar((*iterator2).m);
+		(*iterator2).e = (*iterator2).interaction.scalar((*iterator2).m);
+		this->E2 -= (*iterator2).e;
 		iterator2++;
 	}
 	this->E2 *= 0.5;
@@ -202,16 +205,41 @@ void PartArray::draw() {
 	std::cout << std::endl;
 	Part* temp;
 	int i, j = 0, k;
-	for (i = 0; i < this->x; i++) {
+	for (i = this->x-1; i >=0 ; i--) {
 		for (k = 0; k < this->z; k++) {
-			temp = this->getElem(i, j, k);
+			//стоит обратить внимание что ось Z при выводе направлена сверху вниз, а ось X - слева направо,
+			//поэтому надо перебирать сначала X потом Z,
+			//и Z перебирать задом наперед
+			temp = this->getElem(k, j, i);
 			if (temp->m.z > 0)
-				std::cout << "i ";
+				std::cout << "i "; //вверх
 			else
-				std::cout << "! ";
+				std::cout << "! "; //вниз
 		}
 		std::cout << std::endl;
 	}
+}
+
+std::vector<double> PartArray::getEVector(){
+	std::vector<double> e;
+	std::vector < Part >::iterator iterator1 = this->parts.begin();
+
+	while (iterator1 != this->parts.end()) {
+		e.push_back((*iterator1).e);
+		++iterator1;
+	}
+	return e;
+}
+
+std::vector<double>  PartArray::getHVector(){
+	std::vector<double> h;
+	std::vector < Part >::iterator iterator1 = this->parts.begin();
+
+	while (iterator1 != this->parts.end()) {
+		h.push_back((*iterator1).intMod);
+		++iterator1;
+	}
+	return h;
 }
 
 void PartArray::setAntiferr() {

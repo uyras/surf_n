@@ -63,7 +63,7 @@ void vect::rotate() {
 	this->z *= -1;
 }
 
-vect& vect::operator=(const vect& a){
+vect& vect::operator=(const vect& a) {
 	this->x = a.x;
 	this->y = a.y;
 	this->z = a.z;

@@ -1,4 +1,5 @@
 #include<iostream>
+#include <iomanip>
 #include <fstream>
 #include <cstdlib>
 #include <vector>
@@ -7,6 +8,7 @@
 #include "vect.h"
 #include "config.cpp"
 #include "PartArray.h"
+#include "distributionLaw.h"
 
 using namespace std;
 
@@ -76,45 +78,53 @@ void writefile(vector<double> &history, const char*file) {
 }
 
 int main() {
-	vector<double> history;
-	fstream f;
-
+	cout << fixed << setprecision(15); //устанавливаем формат вывода, 15 знаков после запятой
+ofstream f("d:\\1.txt");
+	distributionLaw distribution;
+	int* distrVal;
+	double* lables;
 	PartArray parts(N, 1, M); //инициализируем 3-х мерный массив parts
 	parts.setAllUp(); //устанавливаем магнитные моменты
-	parts.draw();
-	parts.cout();
-	parts.processStep();
-	parts.calcEnergy1();
-	parts.cout();
-	parts.draw();
-//	parts.cout();
-//	parts.draw();
-//	history = parts.processStep(); //переворачиваем частицы
-//	vect a;
-//	a = parts.calcInteractionNeighb(parts.getElem(4,4,4));
-//	cout<<a.length()<<endl;
-//	parts.cout();
-//	parts.draw();
+	distribution.values = parts.getHVector();
+	distrVal = distribution.calculate(100);
+	lables = distribution.getLables(100);
+	for (int i=0;i<100;i++){
+		f<<lables[i]<<"\t"<<distrVal[i]<<endl;
+	}
+
+	//distribution.values = parts.getHVector();
+
+
+
+	//parts.processStep();
+
+
+	//	history = parts.processStep(); //переворачиваем частицы
+	//	vect a;
+	//	a = parts.calcInteractionNeighb(parts.getElem(4,4,4));
+	//	cout<<a.length()<<endl;
+	//	parts.cout();
+	//	parts.draw();
 	//writefile(history,"d:\\a1.txt");
 
-//	parts.setAntiferr(); //устанавливаем магнитные моменты
-//	parts.draw();
-//	history = parts.processRandom(); //переворачиваем частицы
-//	//	writefile(history,"d:\\a2.txt");
-//	//
-//	parts.setAntiferr(); //устанавливаем магнитные моменты
-//	parts.draw();
-//	history = parts.processMaxH(); //переворачиваем частицы
-//	//	writefile(history,"d:\\a3.txt");
-//	//
-//	parts.setAntiferr(); //устанавливаем магнитные моменты
-//	parts.draw();
-//	history = parts.processGroupMaxH(); //переворачиваем частицы
-//	//	writefile(history,"d:\\a4.txt");
-//	//
-//	parts.setAntiferr(); //устанавливаем магнитные моменты
-//	parts.draw();
-//	history = parts.processGroupStep(); //переворачиваем частицы
+	//	parts.setAntiferr(); //устанавливаем магнитные моменты
+	//	parts.draw();
+	//	history = parts.processRandom(); //переворачиваем частицы
+	//	//	writefile(history,"d:\\a2.txt");
+	//	//
+	//	parts.setAntiferr(); //устанавливаем магнитные моменты
+	//	parts.draw();
+	//	history = parts.processMaxH(); //переворачиваем частицы
+	//	//	writefile(history,"d:\\a3.txt");
+	//	//
+	//	parts.setAntiferr(); //устанавливаем магнитные моменты
+	//	parts.draw();
+	//	history = parts.processGroupMaxH(); //переворачиваем частицы
+	//	//	writefile(history,"d:\\a4.txt");
+	//	//
+	//	parts.setAntiferr(); //устанавливаем магнитные моменты
+	//	parts.draw();
+	//	history = parts.processGroupStep(); //переворачиваем частицы
 	//	writefile(history,"d:\\a5.txt");
 }
 

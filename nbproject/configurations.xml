@@ -7,6 +7,7 @@
       <itemPath>Part.cpp</itemPath>
       <itemPath>PartArray.cpp</itemPath>
       <itemPath>config.cpp</itemPath>
+      <itemPath>distributionLaw.cpp</itemPath>
       <itemPath>main.cpp</itemPath>
       <itemPath>vect.cpp</itemPath>
     </logicalFolder>
@@ -15,6 +16,7 @@
                    projectFiles="true">
       <itemPath>Part.h</itemPath>
       <itemPath>PartArray.h</itemPath>
+      <itemPath>distributionLaw.h</itemPath>
       <itemPath>vect.h</itemPath>
     </logicalFolder>
     <logicalFolder name="ResourceFiles"
@@ -33,6 +35,7 @@
       <itemPath>Makefile</itemPath>
     </logicalFolder>
     <itemPath>basic source</itemPath>
+    <itemPath>equations.jpg</itemPath>
     <itemPath>task</itemPath>
   </logicalFolder>
   <projectmakefile>Makefile</projectmakefile>

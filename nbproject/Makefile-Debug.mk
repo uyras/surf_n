@@ -17,11 +17,11 @@ RANLIB=ranlib
 CC=gcc.exe
 CCC=g++.exe
 CXX=g++.exe
-FC=g77.exe
+FC=gfortran
 AS=as.exe
 
 # Macros
-CND_PLATFORM=Cygwin-Windows
+CND_PLATFORM=Cygwin_4.x-Windows
 CND_DLIB_EXT=dll
 CND_CONF=Debug
 CND_DISTDIR=dist
@@ -38,6 +38,7 @@ OBJECTFILES= \
 	${OBJECTDIR}/vect.o \
 	${OBJECTDIR}/main.o \
 	${OBJECTDIR}/Part.o \
+	${OBJECTDIR}/distributionLaw.o \
 	${OBJECTDIR}/config.o \
 	${OBJECTDIR}/PartArray.o
 
@@ -80,6 +81,11 @@ ${OBJECTDIR}/Part.o: Part.cpp
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} $@.d
 	$(COMPILE.cc) -g -MMD -MP -MF $@.d -o ${OBJECTDIR}/Part.o Part.cpp
+
+${OBJECTDIR}/distributionLaw.o: distributionLaw.cpp 
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} $@.d
+	$(COMPILE.cc) -g -MMD -MP -MF $@.d -o ${OBJECTDIR}/distributionLaw.o distributionLaw.cpp
 
 ${OBJECTDIR}/config.o: config.cpp 
 	${MKDIR} -p ${OBJECTDIR}
