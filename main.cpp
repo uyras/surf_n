@@ -79,53 +79,22 @@ void writefile(vector<double> &history, const char*file) {
 
 int main() {
 	cout << fixed << setprecision(15); //устанавливаем формат вывода, 15 знаков после запятой
-ofstream f("d:\\1.txt");
+ofstream f("d:\\2.txt");
 	distributionLaw distribution;
 	int* distrVal;
 	double* lables;
 	PartArray parts(N, 1, M); //инициализируем 3-х мерный массив parts
-	parts.setAllUp(); //устанавливаем магнитные моменты
-	distribution.values = parts.getHVector();
+	parts.setLines(); //устанавливаем магнитные моменты
+	parts.calcEnergy1();
+
+
+
+	distribution.values = parts.getHZVector();
 	distrVal = distribution.calculate(100);
 	lables = distribution.getLables(100);
 	for (int i=0;i<100;i++){
 		f<<lables[i]<<"\t"<<distrVal[i]<<endl;
 	}
-
-	//distribution.values = parts.getHVector();
-
-
-
-	//parts.processStep();
-
-
-	//	history = parts.processStep(); //переворачиваем частицы
-	//	vect a;
-	//	a = parts.calcInteractionNeighb(parts.getElem(4,4,4));
-	//	cout<<a.length()<<endl;
-	//	parts.cout();
-	//	parts.draw();
-	//writefile(history,"d:\\a1.txt");
-
-	//	parts.setAntiferr(); //устанавливаем магнитные моменты
-	//	parts.draw();
-	//	history = parts.processRandom(); //переворачиваем частицы
-	//	//	writefile(history,"d:\\a2.txt");
-	//	//
-	//	parts.setAntiferr(); //устанавливаем магнитные моменты
-	//	parts.draw();
-	//	history = parts.processMaxH(); //переворачиваем частицы
-	//	//	writefile(history,"d:\\a3.txt");
-	//	//
-	//	parts.setAntiferr(); //устанавливаем магнитные моменты
-	//	parts.draw();
-	//	history = parts.processGroupMaxH(); //переворачиваем частицы
-	//	//	writefile(history,"d:\\a4.txt");
-	//	//
-	//	parts.setAntiferr(); //устанавливаем магнитные моменты
-	//	parts.draw();
-	//	history = parts.processGroupStep(); //переворачиваем частицы
-	//	writefile(history,"d:\\a5.txt");
 }
 
 

@@ -205,7 +205,7 @@ void PartArray::draw() {
 	std::cout << std::endl;
 	Part* temp;
 	int i, j = 0, k;
-	for (i = this->x-1; i >=0 ; i--) {
+	for (i = this->x - 1; i >= 0; i--) {
 		for (k = 0; k < this->z; k++) {
 			//стоит обратить внимание что ось Z при выводе направлена сверху вниз, а ось X - слева направо,
 			//поэтому надо перебирать сначала X потом Z,
@@ -220,7 +220,7 @@ void PartArray::draw() {
 	}
 }
 
-std::vector<double> PartArray::getEVector(){
+std::vector<double> PartArray::getEVector() {
 	std::vector<double> e;
 	std::vector < Part >::iterator iterator1 = this->parts.begin();
 
@@ -231,7 +231,7 @@ std::vector<double> PartArray::getEVector(){
 	return e;
 }
 
-std::vector<double>  PartArray::getHVector(){
+std::vector<double> PartArray::getHVector() {
 	std::vector<double> h;
 	std::vector < Part >::iterator iterator1 = this->parts.begin();
 
@@ -242,11 +242,40 @@ std::vector<double>  PartArray::getHVector(){
 	return h;
 }
 
+std::vector<double> PartArray::getHZVector() {
+	std::vector<double> h;
+	std::vector < Part >::iterator iterator1 = this->parts.begin();
+
+	while (iterator1 != this->parts.end()) {
+		h.push_back((*iterator1).interaction.z);
+		++iterator1;
+	}
+	return h;
+}
+
 void PartArray::setAntiferr() {
 	std::vector < Part >::iterator iterator1;
 	iterator1 = this->parts.begin();
 	while (iterator1 != this->parts.end()) {
 		if ((int) ((*iterator1).pos.x + (*iterator1).pos.z) % 2 == 1) (*iterator1).axis.z = -1.;
+		else (*iterator1).axis.z = 1;
+		(*iterator1).axis.y = 0.;
+		(*iterator1).axis.x = 0.;
+
+		++iterator1;
+	}
+	this->calcM();
+
+	this->calcInteraction();
+	this->calcEnergy1();
+	this->calcEnergy2();
+}
+
+void PartArray::setLines() {
+	std::vector < Part >::iterator iterator1;
+	iterator1 = this->parts.begin();
+	while (iterator1 != this->parts.end()) {
+		if ((int) ((*iterator1).pos.x) % 2 == 1) (*iterator1).axis.z = -1.;
 		else (*iterator1).axis.z = 1;
 		(*iterator1).axis.y = 0.;
 		(*iterator1).axis.x = 0.;

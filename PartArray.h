@@ -81,6 +81,7 @@ public:
      */
 	std::vector<double> getHVector();
 
+	std::vector<double> getHZVector();
 	/**
 	 * Получает определенную частицу из массива и возвращает ссылку на эту частицу
 	 * @param x координата X частицы
@@ -92,6 +93,7 @@ public:
 
 	//настройка начальных конфигураций
 	void setAntiferr(); //антиферромсагнетизм (шахматный порядок)
+	void setLines(); //одна линия вверх, одна вниз
 	void setAllUp(); //все вверх
 	void setRandomZ(); //случайно распределяет вдоль оси Z
 
