@@ -594,4 +594,7 @@ void PartArray::load(char* file){
 		f>>temp.absPos.z;
 		this->parts.push_back(temp);
 	}
+	
+	this->calcInteraction();
+	this->calcEnergy2();
 }
