@@ -212,9 +212,9 @@ void PartArray::draw() {
 			//и Z перебирать задом наперед
 			temp = this->getElem(k, j, i);
 			if (temp->m.z > 0)
-				std::cout << "i "; //вверх
+				std::cout << "+ "; //вверх
 			else
-				std::cout << "! "; //вниз
+				std::cout << "- "; //вниз
 		}
 		std::cout << std::endl;
 	}
