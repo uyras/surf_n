@@ -10,8 +10,10 @@
 #include "config.cpp"
 #include <cmath>
 #include <iostream>
+#include <fstream>
 #include <time.h>
 #include <stdlib.h>
+#include <stdio.h>
 
 
 using namespace std;
@@ -41,6 +43,10 @@ PartArray::PartArray(int x, int y, int z) {
 			}
 		}
 	}
+}
+
+PartArray::PartArray(char* file) {
+	this->load(file);
 }
 
 void PartArray::calcM() {
@@ -537,4 +543,55 @@ std::vector<double> PartArray::processGroupStep() {
 	}
 
 	return history;
+}
+
+void PartArray::save(char* file){
+	std::ofstream f(file);
+
+	//сначала сохраняем xyz
+	f<<this->x<<endl;
+	f<<this->y<<endl;
+	f<<this->z<<endl;
+
+	//затем все магнитные моменты системы и положения точек
+	vector<Part>::iterator iter = this->parts.begin();
+	while(iter!=this->parts.end()){
+		f<<(*iter).m.x<<endl;
+		f<<(*iter).m.y<<endl;
+		f<<(*iter).m.z<<endl;
+		f<<(*iter).pos.x<<endl;
+		f<<(*iter).pos.y<<endl;
+		f<<(*iter).pos.z<<endl;
+		f<<(*iter).absPos.x<<endl;
+		f<<(*iter).absPos.y<<endl;
+		f<<(*iter).absPos.z<<endl;
+		iter++;
+	}
+}
+
+void PartArray::load(char* file){
+	std::ifstream f(file);
+
+	this->parts.clear(); //удаляем все частицы
+	this->E1 = this->E2 = 0; //обнуляем энергии системы
+
+	//сначала сохраняем xyz
+	f>>this->x;
+	f>>this->y;
+	f>>this->z;
+
+	//затем все магнитные моменты системы и положения точек
+	while(!f.eof()){
+		Part temp;
+		f>>temp.m.x;
+		f>>temp.m.y;
+		f>>temp.m.z;
+		f>>temp.pos.x;
+		f>>temp.pos.y;
+		f>>temp.pos.z;
+		f>>temp.absPos.x;
+		f>>temp.absPos.y;
+		f>>temp.absPos.z;
+		this->parts.push_back(temp);
+	}
 }

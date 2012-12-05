@@ -21,6 +21,8 @@ public:
 	 */
 	PartArray(int x, int y, int z);
 
+	PartArray(char* file);
+
 	/**
 	 * рассчитывает магнитный момент для вссех частиц в системе
 	 */
@@ -70,6 +72,10 @@ public:
 	 * рисует конфигурацию массива частиц в консоли
 	 */
 	void draw();
+
+	void save(char* file);
+
+	void load(char* file);
 
 	/**
 	 * возвращает вектор(массив) энергий каждой частицы
