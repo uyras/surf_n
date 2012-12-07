@@ -13,6 +13,7 @@
 class PartArray {
 public:
 	double E1, E2;
+
 	/**
 	 * Создает массив частиц размером X,Y,Z
 	 * @param x
@@ -24,9 +25,15 @@ public:
 	PartArray(char* file);
 
 	/**
-	 * рассчитывает магнитный момент для вссех частиц в системе
+	 * рассчитывает магнитный момент для каждой частицы в системе
 	 */
 	void calcM();
+
+	/**
+	 * Считает общюю проекцию магнитного момента Mz во всей системе
+     * @return Mz всей системы
+     */
+	double calcMZTotal();
 
 	/**
 	 * Рассчитать поле взаимодействия для частицы стоящей на позиции X,Y,Z и записывает её в параметр Interaction частицы
@@ -35,10 +42,10 @@ public:
 	void calcInteraction(Part* elem);
 
 	/**
-	* Считать поле взаимодействия только для соседних 8 элементов
-	* @param elem
-	* @return
-	*/
+	 * Считать поле взаимодействия только для соседних 8 элементов
+	 * @param elem
+	 * @return
+	 */
 	vect calcInteractionNeighb(Part* elem);
 
 	/**
@@ -79,12 +86,12 @@ public:
 
 	/**
 	 * возвращает вектор(массив) энергий каждой частицы
-     */
+	 */
 	std::vector<double> getEVector();
 
 	/**
 	 * возвращает вектор(массив) энергий взаимодействия каждой частицы
-     */
+	 */
 	std::vector<double> getHVector();
 
 	std::vector<double> getHZVector();
@@ -104,12 +111,15 @@ public:
 	void setRandomZ(); //случайно распределяет вдоль оси Z
 
 	//просчет массива, возвращает набор энергий на каждом шаге
-	std::vector<double> processStep(); //последовательный перебор каждой неравновесной частицы
-	//	std::vector<double> processStep2();
+	std::vector<double> processStepXYZ(); //перебор в порядке объявления (сначала Z потом Y потом X)
+	std::vector<double> processStepZYX(); //перебор решетки поперёк
 	std::vector<double> processRandom(); //из набора неравновесных частиц случайным образом выбирается одна и перебирается
 	std::vector<double> processMaxH(); //выбирается максимально неустойчивая частица и переворачивается
 	std::vector<double> processGroupMaxH(); //выбирается группа максимально неустойчивых частиц и переворачиваются разом
 	std::vector<double> processGroupStep(); //все неустойчивые частицы вращаются разом
+	std::vector<double> processFromCenter(int x, int y, int z); //обработка из центра к краям, в параметрах координаты центральной частицы
+	std::vector<double> processHEffective(); //переворот только тех частиц, для которых энергия выше среднего
+
 
 private:
 	std::vector < Part > parts;

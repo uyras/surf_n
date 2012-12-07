@@ -14,6 +14,7 @@
 #include <time.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <stdexcept>
 
 
 using namespace std;
@@ -51,8 +52,8 @@ PartArray::PartArray(char* file) {
 
 void PartArray::calcM() {
 	std::vector < Part >::iterator iterator1;
-	Part* temp;
 	iterator1 = this->parts.begin();
+	Part* temp;
 	while (iterator1 != this->parts.end()) {
 		temp = iterator1.base();
 		temp->m.x = kv * vol * temp->axis.x * I0s;
@@ -62,8 +63,27 @@ void PartArray::calcM() {
 	}
 }
 
+double PartArray::calcMZTotal() {
+	double summ = 0, abssumm = 0;
+	Part* temp;
+	std::vector < Part >::iterator iterator1;
+	iterator1 = this->parts.begin();
+	while (iterator1 != this->parts.end()) {
+		temp = iterator1.base();
+		summ += round(temp->m.z * 1e15)*1e-15;
+		abssumm += std::abs(temp->m.z);
+		++iterator1;
+	}
+	return round(summ * 1e15) / round(abssumm * 1e15);
+}
+
 Part* PartArray::getElem(int x, int y, int z) {
-	return &this->parts.at(x * (this->y * this->z) + y * this->y + z);
+	Part* temp = NULL;
+	try {
+		temp = &this->parts.at(x * (this->y * this->z) + y * this->y + z);
+	}	catch (std::out_of_range& oor) {
+	};
+	return temp;
 }
 
 void PartArray::calcInteraction(Part* elem) {
@@ -329,7 +349,7 @@ void PartArray::setRandomZ() {
 	this->calcEnergy2();
 }
 
-std::vector<double> PartArray::processStep() {
+std::vector<double> PartArray::processStepZYX() {
 	std::vector<Part>::iterator iter;
 	std::vector<double> history;
 	iter = this->parts.begin();
@@ -350,32 +370,33 @@ std::vector<double> PartArray::processStep() {
 	return history;
 }
 
-//std::vector<double> PartArray::processStep2() {
-//	Part* iter;
-//	std::vector<double> history;
-//	Part* temp;
-//	int i, j = 0, k;
-//	bool rotated = true;
-//	for (i = 0; i < this->x; i++) {
-//		for (k = 0; k < this->z; k++) {
-//			iter = this->getElem(k,j,i);
-//			if ((*iter).intMod > hc && (*iter).interaction.scalar((*iter).m) < 0) {
-//				history.push_back(this->E2);
-//				//std::cout << "rotate with x=" << (*iter).pos.x << "; z=" << (*iter).pos.z << std::endl;
-//				(*iter).m.rotate();
-//				(*iter).axis.rotate();
-//				this->calcInteraction();
-//				this->calcEnergy2();
-//				iter = this->parts.begin();
-//			} else {
-//				//std::cout << "normal with x=" << (*iter).pos.x << "; z=" << (*iter).pos.z << std::endl;
-//				iter++;
-//			}
-//		}
-//
-//	}
-//	return history;
-//}
+std::vector<double> PartArray::processStepXYZ() {
+	std::vector<double> history;
+	Part* temp;
+	int i, j, k;
+	bool rotated = true;
+	while (rotated) {
+		rotated = false;
+		for (i = 0; i < this->x; i++) {
+			for (j = 0; j< this->y; j++) {
+				for (k = 0; k < this->z; k++) {
+					temp = this->getElem(k, j, i);
+					if ((*temp).intMod > hc && (*temp).interaction.scalar((*temp).m) < 0) {
+						history.push_back(this->E2);
+						(*temp).m.rotate();
+						(*temp).axis.rotate();
+						this->calcInteraction();
+						this->calcEnergy2();
+						rotated = true;
+					}
+				}
+				if (rotated) break; //если частица была повернута - прекращаем циклы, чтобы while отработал заово
+			}
+			if (rotated) break;
+		}
+	}
+	return history;
+}
 
 std::vector<double> PartArray::processRandom() {
 	std::vector<Part>::iterator iter; //итератор для перебора массива частиц
@@ -510,6 +531,14 @@ std::vector<double> PartArray::processGroupStep() {
 	std::vector<Part*>::iterator iter2; //итератор для перебора нестабильных частиц
 	bool hasUnstable = true; //есть нестабильные частицы или нет
 	while (hasUnstable) {
+
+		this->calcInteraction();
+		//сохраняем новую энергию системы в историю
+		this->calcEnergy2();
+		history.push_back(this->E2);
+		//draw();
+		std::cout << this->E2 << endl;
+
 		hasUnstable = false;
 		unstable.clear(); //чистим набор нестабильных частиц
 
@@ -530,10 +559,135 @@ std::vector<double> PartArray::processGroupStep() {
 			(*iter2)->m.rotate();
 			iter2++;
 		}
+	}
+
+	return history;
+}
+
+std::vector<double> PartArray::processFromCenter(int x, int y, int z) {
+	std::vector<double> history;
+	Part* temp;
+	int i, j = 0, k, r;
+	bool rotated = true;
+	while (rotated) {
+		this->calcInteraction();
+		this->calcEnergy2();
+		history.push_back(this->E2);
+		rotated = false;
+		bool touchPart = true;
+		r = 0; //радиус, каждый ход инкрементируется
+		while (touchPart) { //продолжаем пока радиус не привысит размеры системы
+			touchPart = false;
+			if (r == 0) {
+				temp = this->getElem(x, y, z);
+				if (temp != NULL) {
+					if ((*temp).intMod > hc && (*temp).interaction.scalar((*temp).m) < 0) {
+						(*temp).m.rotate();
+						(*temp).axis.rotate();
+						rotated = true;
+					}
+					touchPart = true;
+				}
+			}
+			//верхняя и нижняя линии
+			for (i = x - r; i < x + r; i++) {
+				//верхняя линия
+				temp = this->getElem(i, j, z - r);
+				if (temp != NULL) {
+					if ((*temp).intMod > hc && (*temp).interaction.scalar((*temp).m) < 0) {
+						(*temp).m.rotate();
+						(*temp).axis.rotate();
+						rotated = true;
+					}
+					touchPart = true;
+				}
+
+				//нижняя линия
+				temp = this->getElem(i + 1, j, z + r);
+				if (temp != NULL) {
+					if ((*temp).intMod > hc && (*temp).interaction.scalar((*temp).m) < 0) {
+						(*temp).m.rotate();
+						(*temp).axis.rotate();
+						rotated = true;
+					}
+					touchPart = true;
+				}
+			}
+			//левая и правая линии
+			for (i = z - r; i < z + r; i++) {
+				//левая линия
+				temp = this->getElem(x - r, j, i + 1);
+				if (temp != NULL) {
+					if ((*temp).intMod > hc && (*temp).interaction.scalar((*temp).m) < 0) {
+						(*temp).m.rotate();
+						(*temp).axis.rotate();
+						rotated = true;
+					}
+					touchPart = true;
+				}
+
+				//правая линия
+				temp = this->getElem(x + r, j, i);
+				if (temp != NULL) {
+					if ((*temp).intMod > hc && (*temp).interaction.scalar((*temp).m) < 0) {
+						(*temp).m.rotate();
+						(*temp).axis.rotate();
+						rotated = true;
+					}
+					touchPart = true;
+				}
+			}
+			if (rotated) break; //если какая-то из частиц была перевернута - начинаем заново
+			if (!touchPart) break; //если радиус велик настолько что ни одна из частиц в процессе обхода не задета
+			r++;
+		}
+	}
+	//определиться где считать поле взаимодействия
+	return history;
+}
+
+std::vector<double> PartArray::processHEffective() {
+	std::vector<double> history; //история переворота
+	std::vector<Part*> unstable; //частицы, подлежащие перевороту при текущей итерации
+	std::vector<Part>::iterator iter; //итератор для перебора массива частиц
+	std::vector<Part*>::iterator iter2; //итератор для перебора нестабильных частиц
+	double averH = 0.; //максимальный модуль поля взаимодействия
+	int averCount = 0.; //количество значений, положеных в среднее
+	bool hasUnstable = true; //есть нестабильные частицы или нет
+	while (hasUnstable) {
+		int rSize = 0; //счетчик, нужен для баловства, всерьёз не воспринимать
+		hasUnstable = false;
+		unstable.clear(); //чистим набор нестабильных частиц
+
+		averH = 0.;
+		averCount = 0;
+
+		//step 1 - сначала находим средний магнитный момент всех частиц
+		iter = this->parts.begin();
+		while (iter != this->parts.end()) {
+			if ((*iter).intMod > hc && (*iter).interaction.scalar((*iter).m) < 0) {
+				averH = (averH * averCount + (*iter).intMod) / (double) (averCount + 1);
+				averCount++;
+				unstable.push_back(iter.base());
+				hasUnstable = true;
+			}
+			iter++;
+		}
+
+		//step 2 - переворачиваем ТОЛЬКО частицы у которых энергия выше или равна среднему
+		iter2 = unstable.begin();
+		while (iter2 != unstable.end()) {
+			if ((int) (*iter2)->intMod >= (int) averH) {
+				(*iter2)->axis.rotate();
+				(*iter2)->m.rotate();
+				rSize++;
+			}
+			iter2++;
+		}
 
 		//step 3 - если чтото было перевернуто - обновляем поля взаимодействия
 		if (hasUnstable) {
-			//std::cout<<"rotate group from "<<unstable.size()<<" elements"<<std::endl;
+			std::cout << "rotate group from " << rSize << " elements" << std::endl;
 			this->calcInteraction();
 			//сохраняем новую энергию системы в историю
 			this->calcEnergy2();
@@ -545,56 +699,56 @@ std::vector<double> PartArray::processGroupStep() {
 	return history;
 }
 
-void PartArray::save(char* file){
+void PartArray::save(char* file) {
 	std::ofstream f(file);
 
 	//сначала сохраняем xyz
-	f<<this->x<<endl;
-	f<<this->y<<endl;
-	f<<this->z<<endl;
+	f << this->x << endl;
+	f << this->y << endl;
+	f << this->z << endl;
 
 	//затем все магнитные моменты системы и положения точек
 	vector<Part>::iterator iter = this->parts.begin();
-	while(iter!=this->parts.end()){
-		f<<(*iter).m.x<<endl;
-		f<<(*iter).m.y<<endl;
-		f<<(*iter).m.z<<endl;
-		f<<(*iter).pos.x<<endl;
-		f<<(*iter).pos.y<<endl;
-		f<<(*iter).pos.z<<endl;
-		f<<(*iter).absPos.x<<endl;
-		f<<(*iter).absPos.y<<endl;
-		f<<(*iter).absPos.z<<endl;
+	while (iter != this->parts.end()) {
+		f << (*iter).m.x << endl;
+		f << (*iter).m.y << endl;
+		f << (*iter).m.z << endl;
+		f << (*iter).pos.x << endl;
+		f << (*iter).pos.y << endl;
+		f << (*iter).pos.z << endl;
+		f << (*iter).absPos.x << endl;
+		f << (*iter).absPos.y << endl;
+		f << (*iter).absPos.z << endl;
 		iter++;
 	}
 }
 
-void PartArray::load(char* file){
+void PartArray::load(char* file) {
 	std::ifstream f(file);
 
 	this->parts.clear(); //удаляем все частицы
 	this->E1 = this->E2 = 0; //обнуляем энергии системы
 
 	//сначала сохраняем xyz
-	f>>this->x;
-	f>>this->y;
-	f>>this->z;
+	f >> this->x;
+	f >> this->y;
+	f >> this->z;
 
 	//затем все магнитные моменты системы и положения точек
-	while(!f.eof()){
+	while (!f.eof()) {
 		Part temp;
-		f>>temp.m.x;
-		f>>temp.m.y;
-		f>>temp.m.z;
-		f>>temp.pos.x;
-		f>>temp.pos.y;
-		f>>temp.pos.z;
-		f>>temp.absPos.x;
-		f>>temp.absPos.y;
-		f>>temp.absPos.z;
+		f >> temp.m.x;
+		f >> temp.m.y;
+		f >> temp.m.z;
+		f >> temp.pos.x;
+		f >> temp.pos.y;
+		f >> temp.pos.z;
+		f >> temp.absPos.x;
+		f >> temp.absPos.y;
+		f >> temp.absPos.z;
 		this->parts.push_back(temp);
 	}
-	
+
 	this->calcInteraction();
 	this->calcEnergy2();
 }
