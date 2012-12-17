@@ -15,6 +15,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdexcept>
+#include "repeatChecker.h"
 
 
 using namespace std;
@@ -529,16 +530,22 @@ std::vector<double> PartArray::processGroupStep() {
 	std::vector<Part*> unstable; //все нестабильные частицы здесь при просчете
 	std::vector<Part>::iterator iter; //итератор для перебора массива частиц
 	std::vector<Part*>::iterator iter2; //итератор для перебора нестабильных частиц
-	bool hasUnstable = true; //есть нестабильные частицы или нет
+	repeatChecker repeater(4);
+	double maxH; //сюда записывается максимальная энергия взаимодействия для переворота частиц в случае зацикливания
+	Part* maxPart; //то же что и maxH, только максимальное поле частицы
+	bool hasUnstable = true, cycled = false;; //есть нестабильные частицы или нет
 	while (hasUnstable) {
 
 		this->calcInteraction();
 		//сохраняем новую энергию системы в историю
 		this->calcEnergy2();
 		history.push_back(this->E2);
+
+		//проверяем на предмет зацикливания
+		cycled = repeater.check(this->E2);
+
 		//draw();
 		std::cout << this->E2 << endl;
-
 		hasUnstable = false;
 		unstable.clear(); //чистим набор нестабильных частиц
 
@@ -552,7 +559,27 @@ std::vector<double> PartArray::processGroupStep() {
 			iter++;
 		}
 
-		//step 2 - переворачиваем ТОЛЬКО частицы с максимальной нестабильностью
+		//step 2 - если был факт зацикливания, выбираем максимальную частицу и переворачиваем только её
+		if (cycled){
+			std::cout<<"cycled, select one particle"<<std::endl;
+			iter2 = unstable.begin();
+			maxH = (*iter2)->intMod;
+			maxPart = (*iter2);
+//			while (iter2 != unstable.end()) {
+//				if (maxH<(*iter2)->intMod){
+//					maxPart = (*iter2);
+//					maxH = (*iter2)->intMod;
+//				}
+//				iter2++;
+//			}
+			unstable.clear();
+			unstable.push_back(maxPart);
+
+			repeater.clear();
+		}
+
+		//step 3 - переворачиваем ТОЛЬКО частицы с максимальной нестабильностью,
+		//а если программа зациклилась - только частицу с максимальным H
 		iter2 = unstable.begin();
 		while (iter2 != unstable.end()) {
 			(*iter2)->axis.rotate();

@@ -9,6 +9,7 @@
       <itemPath>config.cpp</itemPath>
       <itemPath>distributionLaw.cpp</itemPath>
       <itemPath>main.cpp</itemPath>
+      <itemPath>repeatChecker.cpp</itemPath>
       <itemPath>vect.cpp</itemPath>
     </logicalFolder>
     <logicalFolder name="HeaderFiles"
@@ -17,6 +18,7 @@
       <itemPath>Part.h</itemPath>
       <itemPath>PartArray.h</itemPath>
       <itemPath>distributionLaw.h</itemPath>
+      <itemPath>repeatChecker.h</itemPath>
       <itemPath>vect.h</itemPath>
     </logicalFolder>
     <logicalFolder name="ResourceFiles"

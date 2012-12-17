@@ -36,6 +36,7 @@ OBJECTDIR=${CND_BUILDDIR}/${CND_CONF}/${CND_PLATFORM}
 # Object Files
 OBJECTFILES= \
 	${OBJECTDIR}/vect.o \
+	${OBJECTDIR}/repeatChecker.o \
 	${OBJECTDIR}/main.o \
 	${OBJECTDIR}/Part.o \
 	${OBJECTDIR}/distributionLaw.o \
@@ -71,6 +72,11 @@ ${OBJECTDIR}/vect.o: vect.cpp
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} $@.d
 	$(COMPILE.cc) -O2 -MMD -MP -MF $@.d -o ${OBJECTDIR}/vect.o vect.cpp
+
+${OBJECTDIR}/repeatChecker.o: repeatChecker.cpp 
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} $@.d
+	$(COMPILE.cc) -O2 -MMD -MP -MF $@.d -o ${OBJECTDIR}/repeatChecker.o repeatChecker.cpp
 
 ${OBJECTDIR}/main.o: main.cpp 
 	${MKDIR} -p ${OBJECTDIR}

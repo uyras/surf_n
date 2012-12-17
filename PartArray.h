@@ -9,6 +9,7 @@
 #define	PARTARRAY_H
 #include <vector>
 #include "Part.h"
+#include "repeatChecker.h"
 
 class PartArray {
 public:
